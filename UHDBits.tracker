@@ -24,10 +24,10 @@
    - ***** END LICENSE BLOCK ***** -->
 
 <trackerinfo
-	type="scihd"
-	shortName="scihd"
-	longName="ScienceHD"
-	siteName="">
+	type="uhd"
+	shortName="UHD"
+	longName="UHDBits"
+	siteName="uhdbits.org">
 
 	<settings>
 		<gazelle_description/>
@@ -37,33 +37,50 @@
 
 	<servers>
 		<server
-			network="ForPirates"
-			serverNames="irc.sciencehd.me"
-			channelNames="#SciHD-Announce"
-			announcerNames="Xen"
+			network="P2P-Network"
+			serverNames="irc.p2p-network.net"
+			channelNames="#uhd.announce"
+			announcerNames="UHDBot"
 			/>
 	</servers>
 
 	<parseinfo>
 		<linepatterns>
 			<extract>
-				<!--  New Upload! [ Video ] [Secrets of the Dead - (s09e05) Churchill's Deadly Decision] [2010 | MKV | 480p | AC3] - https://sciencehd.me/torrents.php?id=30775&torrentid=37441  -->
-				<regex value="^New\sUpload!\s\[([^\]]+)\]\s\[([^\]]+)\]\s\[([^\]]+)\]\s\-\shttps?\:\/\/([^\/]+\/)\S*[&amp;\?]torrentid=(\d+)"/>
+					<!-- New Torrent: D'Ardennen [2015] - TayTO Type: Movie / 1080p / Encode / Freeleech: 100 Size: 7.00GB - https://uhdbits.org/torrents.php?id=13882 / https://uhdbits.org/torrents.php?action=download&id=20488-->
+					<regex value="New Torrent: (.*) Type: (.*?) Freeleech: (.*) Size: (.*) - https?://.* / (https?://.*id=\d+)"/>
 				<vars>
-					<var name="category"/>
 					<var name="torrentName"/>
-					<var name="tags"/>
+					<var name="$releaseTags"/>
+					<var name="freeleechPercent"/>
+					<var name="torrentSize"/>
 					<var name="$baseUrl"/>
-					<var name="$torrentId"/>
 				</vars>
 			</extract>
 		</linepatterns>
 		<linematched>
+
+			<extract srcvar="torrentName" optional="true">
+				<regex value="(.*) \[(\d+)\] - (.*)"/>
+				<vars>
+					<var name="name1"/>
+					<var name="year"/>
+					<var name="releaseGroup"/>
+				</vars>
+			</extract>
+			<varreplace name="tags" srcvar="$releaseTags" regex="[\/]" replace=","/>
+
+			<extracttags srcvar="$releaseTags" split="/">
+				<setvarif varName="category" regex="^(?:Movie|TV|Music)$"/>
+				<setvarif varName="resolution" regex="^(?:mHD|720p|1080p|1080i|2160p|4K)$"/>
+				<setvarif varName="source" regex="^(?:HDTV|BluRay|Blu\-Ray|WEB\-DL|WEBRip|HDRip|HDAudio|HD\ DVD)$"/>
+
+				<!--Ignored-->
+				<regex value=""/>
+			</extracttags>
+
 			<var name="torrentUrl">
-				<string value="https://"/>
 				<var name="$baseUrl"/>
-				<string value="torrents.php?action=download&amp;id="/>
-				<var name="$torrentId"/>
 				<string value="&amp;authkey="/>
 				<var name="authkey"/>
 				<string value="&amp;torrent_pass="/>
@@ -71,6 +88,7 @@
 			</var>
 		</linematched>
 		<ignore>
+			<regex value="action=download&amp;id=" expected="false"/>
 		</ignore>
 	</parseinfo>
 </trackerinfo>
